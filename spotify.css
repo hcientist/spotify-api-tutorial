@@ -77,6 +77,10 @@ h2, h3, h4, h5 {
     overflow-x: auto;
 }
 
+code {
+    word-wrap: break-word;
+}
+
 code.graybg {
     background-color: #f0f0f0;
 }
