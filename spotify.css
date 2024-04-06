@@ -1,0 +1,164 @@
+body {
+    background: #1db954;
+    background: linear-gradient(20deg, #1db954, #2cd1a8);
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+header {
+    background: rgba(0, 0, 0, 0.75);
+    color: #ffffff;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+nav {
+    padding: 10px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    max-width: 600px;
+
+    a {
+        color: #fff;
+        text-decoration: none;
+        margin-right: 10px;
+
+        &:hover {
+            color: rgb(128, 255, 255);
+        }
+
+        &.selected {
+            font-weight: bold;
+        }
+    }
+}
+
+main {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0 auto;
+}
+
+aside {
+    /* background: #15587e;
+    color: #ffffff; */
+    background: #ffffea;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin: 20px 0;
+
+    & p {
+        margin-bottom: 0;
+    }
+}
+
+footer {
+    background: rgba(0, 0, 0, 0.75);
+    color: #ffffff;
+    padding: 10px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+h2, h3, h4, h5 {
+    margin-top: 0;
+}
+
+.code-display {
+    padding: 10px;
+    border: 1px solid black;
+    margin: 10px 30px;
+    overflow-x: auto;
+}
+
+code.graybg {
+    background-color: #f0f0f0;
+}
+
+.note {
+    display: inline;
+    color: #808080;
+    font-size: 14px;
+    font-style: italic;
+}
+
+.card {
+    background-color: #fefefe;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    width: 1200px;
+}
+
+.fit-card {
+    background-color: #fefefe;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    width: auto;
+}
+
+@media screen and (max-width: 1280px) {
+    .card {
+        width: 100%;
+        border-radius: 0;
+    }
+
+    .fit-card {
+        width: 100%;
+        border-radius: 0;
+    }
+}
+
+button.primary {
+    display: block;
+    min-width: 40%;
+    margin: 0 auto;
+    background-color: #7c25f8;
+
+    &:hover {
+        background-color: #6a1de7;
+    }
+
+    &:active {
+        background-color: #5a15d6;
+    }
+}
+
+button {
+    background-color: #1db954;
+    color: #ffffff;
+    border: none;
+    padding: .75em 1em;
+    border-radius: 50px;
+
+    font-size: 16px;
+    cursor: pointer;
+
+    &.small {
+        padding: .5em 1em;
+        font-size: 12px;
+    }
+
+    &:hover {
+        background-color: #19a048;
+    }
+
+    &:active {
+        background-color: #17863b;
+    }
+}
+
+img#profile-image {
+    border-radius: 20%;
+    width: 300px;
+    height: 300px;
+}

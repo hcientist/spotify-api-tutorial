@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Spotify API Tutorial</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="spotify.css">
+    <link rel="icon" href="https://open.spotifycdn.com/cdn/images/favicon.0f31d2ea.ico">
+</head>
+<body>
+    <header>
+        <h1>Spotify API Tutorial</h1>
+        <nav>
+            <a href="index.html" class="selected">Walkthrough</a>
+            <a href="demo.html">Demo</a>
+            <a href="https://developer.spotify.com/documentation/web-api/">API Reference</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2 id="introduction">Introduction</h2>
+            <p>The Spotify API uses a framework known as <a href="https://oauth.net/2/">OAuth 2.0</a>, which provides different "flows" or procedures for authorization with a web service.</p>
+            <p>We will be following the <a href="https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow">Authorization Code with PKCE Flow</a>, which is what Spotify recommends for this kind of client-side app with no backend. The code snippets provided in this tutorial are taken from the Spotify documentation.</p>
+            <p>Here's a brief overview of the steps we'll be taking:</p>
+            <ol>
+                <li>Registering Your App with Spotify</li>
+                <li>Getting an Authorization Code</li>
+                <li>Exchanging the Authorization Code for an Access Token</li>
+                <li>Making Requests to the Spotify API</li>
+            </ol>
+        </section>
+        <section class="card">
+            <h2 id="registering-your-app-with-spotify">1. Registering Your App with Spotify</h2>
+            <p>Before you can start using the Spotify API, you need to register your app on the <a href="https://developer.spotify.com/dashboard">Spotify Developer Dashboard.</a></p>
+            <p>Once you've registered your app, you'll receive a <code>client_id</code> that you'll need to use to authenticate your app. (Don't worry about the <code>client_secret</code>, this is used for other authorization flows.)</p>
+            <p>Paste your Client ID here: <input id="paste-client-id" data-sync="client_id" type="text" size="40" placeholder="Client ID"> <span class="note">(we won't steal it, promise!)</span></p>
+
+            <h3 id="redirect-uri">Redirect URI</h3>
+            <p>You will also need to register the <code>redirect_uri</code> for your app.</p>
+            <p>Basically, the user will click a link on your site that will redirect them to Spotify so that they can log in and authorize your app. Once they've done so, Spotify will send the user back to your site. The <code>redirect_uri</code> tells Spotify where they should send them. For security reasons, Spotify requires that the <code>redirect_uri</code> be an <a href="https://en.wikipedia.org/wiki/Uniform_Resource_Identifier">absolute URI</a> and that it be registered with your app.</p>
+            <p>Go to the <a href="https://developer.spotify.com/dashboard">Developer Dashboard</a> and add a redirect URI. You should use something like <code>http://localhost:8080/index.html</code> if you're running on a local server. Once your app is deployed, use the full URL of your deployed page.</p>
+        </section>
+        <section class="card">
+            <h2 id="getting-an-authorization-code">2. Getting an Authorization Code</h2>
+            <p>The first thing your app needs to do is request authorization from a Spotify user. This will send the user to Spotify, have them log in, and then redirect back to your app with an <em>authorization code</em> in the query string of the URL.</p>
+
+            <p>You will need two things to request an auth code:</p>
+            <ul>
+                <li>
+                    <code>client_id</code>: <input id="login-client-id" data-sync="client_id" type="text" size="40" placeholder="Client ID">
+                </li>
+                <li>
+                    <code>redirect_uri</code>: <input id="login-redirect-uri" data-sync="redirect_uri" type="text" size="30" placeholder="Redirect URI">
+                </li>
+            </ul>
+
+            <h3 id="making-the-request">Making the Request</h3>
+            <p></p>
+
+            <p>You will need code to generate a <code>code_challenge</code> and a <code>code_verifier</code>. Spotify provides source code to create these in its <a href="https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow#code-verifier">developer documentation</a>. You should use their provided code in your own project.</p>
+
+            <p>Here are the values we've generated for this tutorial: <button id="generate-button" type="button" class="small">Regenerate</button></p>
+
+            <ul>
+                <li><code>code_verifier</code>: <code id="code-verifier" class="graybg"></code></li>
+                <li><code>code_challenge</code>: <code id="code-challenge" class="graybg"></code></li>
+            </ul>
+
+            <p>You should generate your own values programatically each time you make a new authorization request. You will need to store the <code>code_verifier</code> in <code>localStorage</code>, since the page will be reloaded after Spotify redirects the user. Read <a href="#code-verifier-and-code-challenge">the section below</a> to see why this is important!</p>
+            
+            <p>Here is an example of making the authorization request via JavaScript (updated with your request values):</p>
+
+            <!-- HTML generated using hilite.me -->
+            <div class="code-display">
+                <pre style="margin: 0; line-height: 125%"><span style="color: #008000">window</span>.localStorage.setItem(<span style="color: #BA2121">&#39;code_verifier&#39;</span>, codeVerifier); <span style="color: #408080; font-style: italic">// Save the code verifier for later</span>
+
+<span style="color: #008000; font-weight: bold">const</span> clientId <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;<span data-sync="client_id"></span>&#39;</span>;
+<span style="color: #008000; font-weight: bold">const</span> redirectUri <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;<span data-sync="redirect_uri"></span>&#39;</span>;
+
+<span style="color: #008000; font-weight: bold">const</span> scope <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;user-read-private user-read-email&#39;</span>; <span style="color: #408080; font-style: italic">// Specifies what user data your app can access!</span>
+<span style="color: #008000; font-weight: bold">const</span> authUrl <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> URL(<span style="color: #BA2121">&quot;https://accounts.spotify.com/authorize&quot;</span>)
+
+<span style="color: #008000; font-weight: bold">const</span> params <span style="color: #666666">=</span>  {
+    response_type<span style="color: #666666">:</span> <span style="color: #BA2121">&#39;code&#39;</span>,
+    client_id<span style="color: #666666">:</span> clientId,
+    scope<span style="color: #666666">:</span> scope,
+    code_challenge_method<span style="color: #666666">:</span> <span style="color: #BA2121">&#39;S256&#39;</span>,
+    code_challenge<span style="color: #666666">:</span> codeChallenge, <span style="color: #408080; font-style: italic">// The hashed code verifier</span>
+    redirect_uri<span style="color: #666666">:</span> redirectUri,
+}
+
+authUrl.search <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> URLSearchParams(params).toString();
+<span style="color: #008000">window</span>.location.href <span style="color: #666666">=</span> authUrl.toString(); <span style="color: #408080; font-style: italic">// Redirect the user</span>
+</pre>
+            </div>
+
+            <aside>
+                <h4 id="code-verifier-and-code-challenge">Learn More: Code Verifier and Code Challenge</h4>
+                <p>When you send the authorization request, you must provide a "code challenge" to the server. This code challenge is a one-way hash of a random string known as the "code verifier".</p>
+                <p>You first give the <em>code challenge</em> when sending the user to Spotify to login. The server will return an <em>authorization code</em> back to your app <span class="note">(which could be stolen by an attacker, since it is given in the URL)</span>.</p>
+                <p>Then you send the <em>authorization code</em> to Spotify in a <code>POST</code> request. But this time, you include the original <em>code verifier</em> string! The server can re-hash the <em>code verifier</em> and make sure it matches the <em>code challenge</em> you sent earlier. This way, it's able to ensure that you are the same one who sent the original request. This is the basis for PKCE. You can read more about it <a href="https://pazel.dev/teach-me-pkce-proof-key-for-code-exchange-in-5-minutes">here</a>.</p>
+            </aside>
+
+            <h3 id="try-login">Try It Yourself!</h3>
+            <p>If you've set the <code>client_id</code> and the <code>redirect_uri</code> above, you can click this button to request an authorization code:</p>
+            <button id="login-button" class="primary" type="button">Login with Spotify</button>
+            <p>Your auth code is: <code id="auth-code" class="graybg"></code></p>
+        </section>
+        <section class="card">
+            <h2 id="exchanging-the-auth-code">3. Exchanging the Authorization Code for an Access Token</h2>
+            <p>Once you have the authorization code, you can exchange it for an access token. This token is what you will use to make requests to the Spotify API. If you have successfully requested an auth code, it should be present in the URL's <em>query string</em>.</p>
+
+            <p>You can get the auth code from the URL like so:</p>
+            
+            <!-- HTML generated using hilite.me -->
+            <div class="code-display">
+                <pre style="margin: 0; line-height: 125%"><span style="color: #008000; font-weight: bold">const</span> urlParams <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> URLSearchParams(<span style="color: #008000">window</span>.location.search);
+<span style="color: #008000; font-weight: bold">const</span> authCode <span style="color: #666666">=</span> urlParams.get(<span style="color: #BA2121">&#39;code&#39;</span>);
+</pre>
+            </div>
+
+            <p>Now you can exchange this code for an access token. This token is your "golden ticket 🎫" to the <a href="https://developer.spotify.com/documentation/web-api">Spotify Web API</a>. We will need to make another request to the Spotify server, this time a <code>POST</code> request.</p>
+
+            <h3 id="making-the-token-request">Making the Request</h3>
+            <p>There are a few body parameters, which need to be in the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST#example"><code>x-www-form-urlencoded</code></a> format. These are:</p>
+            <ul>
+                <li><code>grant_type</code>: <code class="graybg">"authorization_code"</code> <span class="note">(a string literal)</span></li>
+                <li><code>client_id</code>: <code data-sync="client_id" class="graybg"></code> <span class="note">(same as before)</span></li>
+                <li><code>redirect_uri</code>: <code data-sync="redirect_uri" class="graybg"></code> <span class="note">(same one used to request the auth code)</span></li>
+                <li><code>code_verifier</code>: <code id="code-verifier-body" class="graybg"></code> <span class="note">(value from <code>localStorage</code>)</span></li>
+                <li><code>code</code>: <code id="auth-code-body" class="graybg"></code> <span class="note">(from the URL)</span></li>
+            </ul>
+
+            <p>Here is an example of a request that exchanges the auth code for an access token:</p>
+
+            <!-- HTML generated using hilite.me -->
+            <div class="code-display">
+                <pre style="margin: 0; line-height: 125%"><span style="color: #408080; font-style: italic">// codeVerifier MUST be the same as the one used to make the code challenge for the auth request</span>
+<span style="color: #008000; font-weight: bold">const</span> codeVerifier <span style="color: #666666">=</span> localStorage.getItem(<span style="color: #BA2121">&#39;code_verifier&#39;</span>);
+
+<span style="color: #008000; font-weight: bold">const</span> payload <span style="color: #666666">=</span> {
+    method<span style="color: #666666">:</span> <span style="color: #BA2121">&#39;POST&#39;</span>,
+    headers<span style="color: #666666">:</span> {
+        <span style="color: #BA2121">&#39;Content-Type&#39;</span><span style="color: #666666">:</span> <span style="color: #BA2121">&#39;application/x-www-form-urlencoded&#39;</span>,
+    },
+    body<span style="color: #666666">:</span> <span style="color: #008000; font-weight: bold">new</span> URLSearchParams({
+        grant_type<span style="color: #666666">:</span> <span style="color: #BA2121">&#39;authorization_code&#39;</span>,
+        client_id<span style="color: #666666">:</span> <span style="color: #BA2121">&#39;<span data-sync="client_id"></span>&#39;</span>,
+        redirect_uri<span style="color: #666666">:</span> <span style="color: #BA2121">&#39;<span data-sync="redirect_uri"></span>&#39;</span>,
+        code_verifier<span style="color: #666666">:</span> codeVerifier,
+        code<span style="color: #666666">:</span> authCode, <span style="color: #408080; font-style: italic">// From the URL</span>
+    }),
+}
+
+<span style="color: #008000; font-weight: bold">const</span> response <span style="color: #666666">=</span> await fetch(<span style="color: #BA2121">&#39;https://accounts.spotify.com/api/token&#39;</span>, payload);
+<span style="color: #008000; font-weight: bold">const</span> data <span style="color: #666666">=</span> await response.json();
+
+<span style="color: #008000; font-weight: bold">const</span> accessToken <span style="color: #666666">=</span> data.access_token;
+</pre>
+            </div>
+
+            <h3 id="try-token">Try It Yourself!</h3>
+            <p>If you've successfully obtained an auth code, you can click this button to exchange it for an access token:</p>
+            <button id="token-button" class="primary" type="button">Get Access Token</button>
+            <p>Your access token is: <code id="access-token" class="graybg"></code></p>
+
+        </section>
+        <section class="card">
+            <h2 id="making-requests-to-the-spotify-api">4. Making Requests to the Spotify API</h2>
+            <p>Now that you have an access token, you can make requests to the <a href="https://developer.spotify.com/documentation/web-api">Spotify Web API</a>. For this tutorial, we will get the current user's profile and display their name and profile image. You can read the documentation for this endpoint <a href="https://developer.spotify.com/documentation/web-api/reference/get-current-users-profile">here</a>.</p>
+            
+            <aside>
+                <h4 id="additional-scopes">Additional Scopes?</h3>
+                <p>Some API endpoints require specific "scopes". If you need additional access to user data beyond what is given by the <code>user-read-private user-read-email</code> scope, you can specify <a href="https://developer.spotify.com/documentation/web-api/concepts/scopes">additional scopes</a> when making the <a href="#making-the-request">auth code request</a>.</p>
+            </aside>
+            
+            <p>The base URL for the Spotify API is <code>https://api.spotify.com/v1</code>, and this specific endpoint has the path <code>/me</code>. Thus, the full URL is <code>https://api.spotify.com/v1/me</code>. You can read more about Spotify API calls <a href="https://developer.spotify.com/documentation/web-api/concepts/api-calls">here</a>.</p>
+            <p>To send a request to this (or any other) API endpoint, we can use <code>fetch()</code> with the full URL, and additionally specify any parameters the endpoint is expecting. All your requests must include the <a href="https://developer.spotify.com/documentation/web-api/concepts/access-token">access token</a> in the <code>Authorization</code> header, with the value: <code>Bearer [YOUR_ACCESS_TOKEN_HERE]</code>.</p>
+            
+            <h3 id="example-api-request">Example Request</h3>
+            <p>Here is an example of how you can get the current user's profile:</p>
+
+            <!-- HTML generated using hilite.me -->
+            <div class="code-display">
+                <pre style="margin: 0; line-height: 125%"><span style="color: #008000; font-weight: bold">const</span> response <span style="color: #666666">=</span> await fetch(<span style="color: #BA2121">&quot;https://api.spotify.com/v1/me&quot;</span>, {
+    headers<span style="color: #666666">:</span> {
+        <span style="color: #BA2121">&#39;Authorization&#39;</span><span style="color: #666666">:</span> <span style="color: #BA2121">&#39;Bearer &#39;</span> <span style="color: #666666">+</span> accessToken,
+    },
+});
+
+<span style="color: #008000; font-weight: bold">const</span> data <span style="color: #666666">=</span> await response.json();
+</pre>
+            </div>
+
+            <h3 id="try-api">Try It Yourself!</h3>
+            <p>If you've successfully obtained an access token, you can click this button to get the current user's profile:</p>
+            <button id="profile-button" class="primary" type="button">Get User Profile</button>
+            <p>Your user profile is: <code id="profile-name" class="graybg"></code></p>
+            <img id="profile-image" src="https://placehold.co/300x300" alt="User profile"></img>
+        </section>
+    </main>
+
+    <footer>
+        <p>Created with ❤️ for CS 343: Application Development, James Madison University.</p>
+    </footer>
+
+    <script src="spotify.js"></script>
+    <script src="tutorial.js"></script>
+</body>
+</html>
