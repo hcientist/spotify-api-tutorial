@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Spotify API Tutorial - Landing</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../styles/spotify.css">
+    <link rel="icon" href="https://open.spotifycdn.com/cdn/images/favicon.0f31d2ea.ico">
+</head>
+<body>
+    <header>
+        <h1>Spotify API Tutorial</h1>
+        <nav>
+            <a href="../index.html">Walkthrough</a>
+            <a href="index.html" class="selected">Demo</a>
+            <a href="https://developer.spotify.com/documentation/web-api/">API Reference</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2>Landing Page</h2>
+            <p>Redirecting...</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Created with ❤️ for CS 343: Application Development, James Madison University.</p>
+    </footer>
+
+    <script src="../js/spotify.js"></script>
+    <script>
+        const clientId = "3b860bb86e0e485d8676615457acc772";
+        // const redirectUri = "http://127.0.0.1:8080/demo/landing.html"; // Replace with your own URL
+        const redirectUri = new URL("./landing.html", window.location.href).href; // Needed for demo, since it may be hosted elsewhere
+
+        // (1) Get the authorization code from the URL
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const authCode = urlParams.get("code");
+
+        // If there is no code, redirect to the login page
+        if (!authCode) {
+            console.log("No authorization code found!");
+            window.location.href = "index.html";
+        }
+
+        // (2) Get the code verifier from local storage
+
+        const codeVerifier = localStorage.getItem("demo_code_verifier");
+
+        // If there is no code verifier, redirect to the login page
+        if (!codeVerifier) {
+            console.log("No code verifier found!");
+            window.location.href = "index.html";
+        }
+
+        // (3) Exchange the authorization code for an access token
+        
+        const getAccessToken = async () => {
+            try {
+                console.log(authCode)
+                const data = await getToken(clientId, redirectUri, authCode, codeVerifier);
+                console.log(data);
+
+                // Clear the code verifier from local storage
+                localStorage.removeItem("demo_code_verifier");
+
+                // Update the token in local storage
+                localStorage.setItem("demo_access_token", data.access_token);
+                localStorage.setItem("demo_refresh_token", data.refresh_token);
+                localStorage.setItem("demo_expiry_time", Date.now() + (data.expires_in * 1000));
+
+                // Redirect to the result page
+                window.location.href = "result.html";
+            } catch (error) {
+                alert(error);
+            }
+        }
+
+        getAccessToken(); // Call the function
+    </script>
+</body>
+</html>

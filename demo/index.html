@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Spotify API Tutorial - Demo</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../styles/spotify.css">
+    <link rel="icon" href="https://open.spotifycdn.com/cdn/images/favicon.0f31d2ea.ico">
+</head>
+<body>
+    <header>
+        <h1>Spotify API Tutorial</h1>
+        <nav>
+            <a href="../index.html">Walkthrough</a>
+            <a href="index.html" class="selected">Demo</a>
+            <a href="https://developer.spotify.com/documentation/web-api/">API Reference</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2>API Demo</h2>
+            <div id="login-status" hidden>
+                <p>Currently, you are not logged in!</p>
+                <button id="login-button" class="primary" type="button">Login with Spotify</button>
+            </div>
+            <div id="landing-redirect" hidden>
+                <p>You are already logged in with Spotify.</p>
+                <p>Click the button below to go to the result page.</p>
+                <a href="result.html" class="button primary">Go to Result</a>
+                <p>Or click the button below to log out.</p>
+                <button id="logout-button" type="button">Logout</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Created with ❤️ for CS 343: Application Development, James Madison University.</p>
+    </footer>
+
+    <script src="../js/spotify.js"></script>
+    <script>
+        const clientId = "3b860bb86e0e485d8676615457acc772";
+        // const redirectUri = "http://127.0.0.1:8080/demo/landing.html"; // Replace with your own URL
+        const redirectUri = new URL("./landing.html", window.location.href).href; // Needed for demo, since it may be hosted elsewhere
+
+        // (1) Check to see if there is already an access token in localStorage
+
+        let accessToken = localStorage.getItem("demo_access_token");
+
+        // Display the appropriate content based on the login status
+        if (accessToken) {
+            document.getElementById("landing-redirect").hidden = false;
+        } else {
+            document.getElementById("login-status").hidden = false;
+        }
+
+        // (2) When the login button is clicked, generate a code challenge and request an authorization code
+
+        document.getElementById("login-button").addEventListener("click", async () => {
+            [verifier, challenge] = await generateCodeChallenge();
+            localStorage.setItem("demo_code_verifier", verifier); // Don't forget to store the code verifier!
+            requestAuthCode(clientId, redirectUri, challenge, "user-library-modify"); // Special scope for saving songs
+        });
+
+        // (3) When the logout button is clicked, clear the access token and refresh the page
+
+        document.getElementById("logout-button").addEventListener("click", () => {
+            localStorage.removeItem("demo_access_token");
+            localStorage.removeItem("demo_refresh_token");
+            localStorage.removeItem("demo_expiry_time");
+            localStorage.removeItem("demo_code_verifier");
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <title>Spotify API Tutorial</title>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="spotify.css">
+    <link rel="stylesheet" href="styles/spotify.css">
     <link rel="icon" href="https://open.spotifycdn.com/cdn/images/favicon.0f31d2ea.ico">
 </head>
 <body>
@@ -11,7 +11,7 @@
         <h1>Spotify API Tutorial</h1>
         <nav>
             <a href="index.html" class="selected">Walkthrough</a>
-            <a href="demo.html">Demo</a>
+            <a href="demo/index.html">Demo</a>
             <a href="https://developer.spotify.com/documentation/web-api/">API Reference</a>
         </nav>
     </header>
@@ -38,7 +38,7 @@
             <h3 id="redirect-uri">Redirect URI</h3>
             <p>You will also need to register the <code>redirect_uri</code> for your app.</p>
             <p>Basically, the user will click a link on your site that will redirect them to Spotify so that they can log in and authorize your app. Once they've done so, Spotify will send the user back to your site. The <code>redirect_uri</code> tells Spotify where they should send them. For security reasons, Spotify requires that the <code>redirect_uri</code> be an <a href="https://en.wikipedia.org/wiki/Uniform_Resource_Identifier">absolute URI</a> and that it be registered with your app.</p>
-            <p>Go to the <a href="https://developer.spotify.com/dashboard">Developer Dashboard</a> and add a redirect URI. You should use something like <code>http://localhost:8080/index.html</code> if you're running on a local server. Once your app is deployed, use the full URL of your deployed page.</p>
+            <p>Go to the <a href="https://developer.spotify.com/dashboard">Developer Dashboard</a> and add a redirect URI. You should use something like <code>http://localhost:8080/index.html</code> if you're running on a local server. Once your app is deployed, use the full URL of your deployed page. <span class="note">(Spotify treats localhost and 127.0.0.1 as different, so make sure you specify the right one - or both!)</span></p>
         </section>
         <section class="card">
             <h2 id="getting-an-authorization-code">2. Getting an Authorization Code</h2>
@@ -50,7 +50,7 @@
                     <code>client_id</code>: <input id="login-client-id" data-sync="client_id" type="text" size="40" placeholder="Client ID">
                 </li>
                 <li>
-                    <code>redirect_uri</code>: <input id="login-redirect-uri" data-sync="redirect_uri" type="text" size="30" placeholder="Redirect URI">
+                    <code>redirect_uri</code>: <input id="login-redirect-uri" data-sync="redirect_uri" type="text" size="40" placeholder="Redirect URI"> <span class="note">(This should be a page that is prepared to handle the returned auth code)</span>
                 </li>
             </ul>
 
@@ -67,7 +67,7 @@
             </ul>
 
             <p>You should generate your own values programatically each time you make a new authorization request. You will need to store the <code>code_verifier</code> in <code>localStorage</code>, since the page will be reloaded after Spotify redirects the user. Read <a href="#code-verifier-and-code-challenge">the section below</a> to see why this is important!</p>
-            
+
             <p>Here is an example of making the authorization request via JavaScript (updated with your request values):</p>
 
             <!-- HTML generated using hilite.me -->
@@ -111,7 +111,7 @@ authUrl.search <span style="color: #666666">=</span> <span style="color: #008000
             <p>Once you have the authorization code, you can exchange it for an access token. This token is what you will use to make requests to the Spotify API. If you have successfully requested an auth code, it should be present in the URL's <em>query string</em>.</p>
 
             <p>You can get the auth code from the URL like so:</p>
-            
+
             <!-- HTML generated using hilite.me -->
             <div class="code-display">
                 <pre style="margin: 0; line-height: 125%"><span style="color: #008000; font-weight: bold">const</span> urlParams <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> URLSearchParams(<span style="color: #008000">window</span>.location.search);
@@ -163,20 +163,21 @@ authUrl.search <span style="color: #666666">=</span> <span style="color: #008000
             <p>If you've successfully obtained an auth code, you can click this button to exchange it for an access token:</p>
             <button id="token-button" class="primary" type="button">Get Access Token</button>
             <p>Your access token is: <code id="access-token" class="graybg"></code></p>
+            <p class="note">This token will last for an hour, after which you will need to request a new one. There is a mechanism to <a href="https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens">refresh the token</a>, so the user doesn't need to log in again.</p>
 
         </section>
         <section class="card">
             <h2 id="making-requests-to-the-spotify-api">4. Making Requests to the Spotify API</h2>
             <p>Now that you have an access token, you can make requests to the <a href="https://developer.spotify.com/documentation/web-api">Spotify Web API</a>. For this tutorial, we will get the current user's profile and display their name and profile image. You can read the documentation for this endpoint <a href="https://developer.spotify.com/documentation/web-api/reference/get-current-users-profile">here</a>.</p>
-            
+
             <aside>
-                <h4 id="additional-scopes">Additional Scopes?</h3>
+                <h4 id="additional-scopes">Additional Scopes?</h4>
                 <p>Some API endpoints require specific "scopes". If you need additional access to user data beyond what is given by the <code>user-read-private user-read-email</code> scope, you can specify <a href="https://developer.spotify.com/documentation/web-api/concepts/scopes">additional scopes</a> when making the <a href="#making-the-request">auth code request</a>.</p>
             </aside>
-            
+
             <p>The base URL for the Spotify API is <code>https://api.spotify.com/v1</code>, and this specific endpoint has the path <code>/me</code>. Thus, the full URL is <code>https://api.spotify.com/v1/me</code>. You can read more about Spotify API calls <a href="https://developer.spotify.com/documentation/web-api/concepts/api-calls">here</a>.</p>
             <p>To send a request to this (or any other) API endpoint, we can use <code>fetch()</code> with the full URL, and additionally specify any parameters the endpoint is expecting. All your requests must include the <a href="https://developer.spotify.com/documentation/web-api/concepts/access-token">access token</a> in the <code>Authorization</code> header, with the value: <code>Bearer [YOUR_ACCESS_TOKEN_HERE]</code>.</p>
-            
+
             <h3 id="example-api-request">Example Request</h3>
             <p>Here is an example of how you can get the current user's profile:</p>
 
@@ -196,7 +197,7 @@ authUrl.search <span style="color: #666666">=</span> <span style="color: #008000
             <p>If you've successfully obtained an access token, you can click this button to get the current user's profile:</p>
             <button id="profile-button" class="primary" type="button">Get User Profile</button>
             <p>Your user profile is: <code id="profile-name" class="graybg"></code></p>
-            <img id="profile-image" src="https://placehold.co/300x300" alt="User profile"></img>
+            <img id="profile-image" src="https://placehold.co/300x300" alt="User profile">
         </section>
     </main>
 
@@ -204,7 +205,7 @@ authUrl.search <span style="color: #666666">=</span> <span style="color: #008000
         <p>Created with ❤️ for CS 343: Application Development, James Madison University.</p>
     </footer>
 
-    <script src="spotify.js"></script>
-    <script src="tutorial.js"></script>
+    <script src="js/spotify.js"></script>
+    <script src="js/tutorial.js"></script>
 </body>
 </html>

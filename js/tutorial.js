@@ -1,6 +1,21 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////
-// Below is the code for the UI
-  
+// Below is the code for the tutorial
+
+const getUserProfile = async (accessToken) => {
+    const response = await fetch("https://api.spotify.com/v1/me", {
+        headers: {
+            'Authorization': 'Bearer ' + accessToken,
+        },
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(`${data.error.message}`);
+    }
+
+    return data;
+}
+
 // Set up code verifier and code challenge
 
 const displayCodeChallenge = async (verifier, challenge) => {
@@ -35,7 +50,7 @@ if (!codeVerifier) {
 if (!localStorage.getItem("redirect_uri")) {
     // Set default redirect URI
     let redirectUri = window.location.origin + window.location.pathname;
-    redirectUri = redirectUri.replace("127.0.0.1", "localhost");
+    // redirectUri = redirectUri.replace("127.0.0.1", "localhost");
     localStorage.setItem("redirect_uri", redirectUri);
 }
 
@@ -129,10 +144,10 @@ document.getElementById("token-button").addEventListener("click", () => {
         return;
     }
 
-    getToken(clientId, authCode, redirectUri, codeVerifier).then((token) => {
-        document.getElementById("access-token").textContent = token;
-        localStorage.setItem("access_token", token);
-        accessToken = token;
+    getToken(clientId, redirectUri, authCode, codeVerifier).then((data) => {
+        accessToken = data.access_token;
+        document.getElementById("access-token").textContent = accessToken;
+        localStorage.setItem("access_token", accessToken);
         alert("Access token received and stored in local storage.");
     }).catch((error) => {
         alert(`Error: ${error.message}`);
