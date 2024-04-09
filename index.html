@@ -110,7 +110,7 @@ authUrl.search <span style="color: #666666">=</span> <span style="color: #008000
             <h2 id="exchanging-the-auth-code">3. Exchanging the Authorization Code for an Access Token</h2>
             <p>Once you have the authorization code, you can exchange it for an access token. This token is what you will use to make requests to the Spotify API. If you have successfully requested an auth code, it should be present in the URL's <em>query string</em>.</p>
 
-            <p>You can get the auth code from the URL like so:</p>
+            <p>You can get the auth code from the URL like so, using URLSearchParams to parse the query string (<a href="https://www.jackfranklin.co.uk/blog/url-search-params/">read more!</a>):</p>
 
             <!-- HTML generated using hilite.me -->
             <div class="code-display">
